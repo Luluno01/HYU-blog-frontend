@@ -26,15 +26,15 @@ import {
   Provide,
   Vue,
   Watch
-} from "vue-property-decorator";
+} from 'vue-property-decorator'
 
 @Component
 export default class HelloWorld extends Vue {
   @Prop({
     type: String,
-    default: ""
+    default: ''
   })
-  msg: string = "";
+  msg: string = '';
 }
 </script>
 

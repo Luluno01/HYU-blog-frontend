@@ -5,11 +5,20 @@ module.exports = {
   },
   'extends': [
     'plugin:vue/essential',
-    '@vue/prettier',
     '@vue/typescript'
   ],
   rules: {
-    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+    'semi': [1, 'never'],
+    'quotes': [1, 'single'],
+    'no-console': 'off',
+    'no-debugger': 'off',
+    'vue/attribute-hyphenation': [
+      'error',
+      'always'
+    ],
+    'vue/html-indent': [
+      'error',
+      2
+    ]
   }
 }

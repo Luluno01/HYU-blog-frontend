@@ -70,9 +70,9 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import HelloWorld from "./components/HelloWorld.vue";
+import Vue from 'vue'
+import Component from 'vue-class-component'
+import HelloWorld from './components/HelloWorld.vue'
 
 @Component({
   components: {
@@ -85,14 +85,14 @@ export default class App extends Vue {
   fixed: boolean = false;
   items = [
     {
-      icon: "bubble_chart",
-      title: "Inspire"
+      icon: 'bubble_chart',
+      title: 'Inspire'
     }
   ];
   miniVariant: boolean = false;
   right: boolean = true;
   rightDrawer: boolean = false;
-  title: string = "Vuetify.js";
-  msg: string = "Rua!";
+  title: string = 'Vuetify.js';
+  msg: string = 'Rua!';
 }
 </script>
