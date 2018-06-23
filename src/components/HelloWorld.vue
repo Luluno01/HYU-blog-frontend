@@ -4,7 +4,7 @@
       <v-layout column align-center>
         <img src="@/assets/logo.png" alt="Vuetify.js" class="mb-5">
         <blockquote>
-          &#8220;First, solve the problem. Then, write the code.&#8221;
+          &#8220;{{ msg }}&#8221;
           <footer>
             <small>
               <em>&mdash;John Johnson</em>
@@ -16,13 +16,26 @@
   </v-container>
 </template>
 
-<script>
-export default {
-  name: "HelloWorld",
-  props: {
-    msg: String
-  }
-};
+<script lang="ts">
+import {
+  Component,
+  Emit,
+  Inject,
+  Model,
+  Prop,
+  Provide,
+  Vue,
+  Watch
+} from "vue-property-decorator";
+
+@Component
+export default class HelloWorld extends Vue {
+  @Prop({
+    type: String,
+    default: ""
+  })
+  msg: string = "";
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

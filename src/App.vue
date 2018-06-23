@@ -45,7 +45,7 @@
       </v-btn>
     </v-toolbar>
     <v-content>
-      <HelloWorld/>
+      <HelloWorld :msg="msg"/>
     </v-content>
     <v-navigation-drawer
       temporary
@@ -69,30 +69,30 @@
   </v-app>
 </template>
 
-<script>
-import HelloWorld from "./components/HelloWorld";
+<script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
+import HelloWorld from "./components/HelloWorld.vue";
 
-export default {
-  name: "App",
+@Component({
   components: {
     HelloWorld
-  },
-  data() {
-    return {
-      clipped: false,
-      drawer: true,
-      fixed: false,
-      items: [
-        {
-          icon: "bubble_chart",
-          title: "Inspire"
-        }
-      ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: "Vuetify.js"
-    };
   }
-};
+})
+export default class App extends Vue {
+  clipped: boolean = false;
+  drawer: boolean = true;
+  fixed: boolean = false;
+  items = [
+    {
+      icon: "bubble_chart",
+      title: "Inspire"
+    }
+  ];
+  miniVariant: boolean = false;
+  right: boolean = true;
+  rightDrawer: boolean = false;
+  title: string = "Vuetify.js";
+  msg: string = "Rua!";
+}
 </script>
