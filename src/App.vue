@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app class="unselectable">
     <v-navigation-drawer
       persistent
       :mini-variant="miniVariant"
@@ -9,6 +9,11 @@
       fixed
       app
     >
+      <user-view
+        :user-info="userInfo"
+        :mini-variant="miniVariant"
+      />
+      <v-divider></v-divider>
       <v-list>
         <v-list-tile
           value="true"
@@ -26,45 +31,39 @@
     </v-navigation-drawer>
     <v-toolbar
       app
+      color="primary"
       :clipped-left="clipped"
     >
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-btn icon @click.stop="miniVariant = !miniVariant">
-        <v-icon v-html="miniVariant ? 'chevron_right' : 'chevron_left'"></v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="clipped = !clipped">
-        <v-icon>web</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="fixed = !fixed">
-        <v-icon>remove</v-icon>
-      </v-btn>
+      <v-slide-x-transition mode="out-in">
+        <v-btn icon @click.stop="miniVariant = !miniVariant" v-show="drawer" class="hidden-md-and-down">
+          <v-icon v-html="miniVariant ? 'chevron_right' : 'chevron_left'"></v-icon>
+        </v-btn>
+      </v-slide-x-transition>
+      <v-slide-x-transition mode="out-in">
+        <v-btn icon @click.stop="clipped = !clipped" v-show="drawer" class="hidden-md-and-down">
+          <v-icon>web</v-icon>
+        </v-btn>
+      </v-slide-x-transition>
+      <v-slide-x-transition mode="out-in">
+        <v-btn icon @click.stop="fixed = !fixed" v-show="drawer" class="hidden-md-and-down">
+          <v-icon>remove</v-icon>
+        </v-btn>
+      </v-slide-x-transition>
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon @click.stop="rightDrawer = !rightDrawer">
-        <v-icon>menu</v-icon>
+      <v-btn icon replace to="/about">
+        <i class="material-icons">help</i>
       </v-btn>
     </v-toolbar>
     <v-content>
-      <HelloWorld :msg="msg"/>
+      <!-- Main content -->
+      <v-slide-y-transition mode="out-in">
+        <router-view></router-view>
+      </v-slide-y-transition>
     </v-content>
-    <v-navigation-drawer
-      temporary
-      :right="right"
-      v-model="rightDrawer"
-      fixed
-      app
-    >
-      <v-list>
-        <v-list-tile @click="right = !right">
-          <v-list-tile-action>
-            <v-icon>compare_arrows</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-title>Switch drawer (click me)</v-list-tile-title>
-        </v-list-tile>
-      </v-list>
-    </v-navigation-drawer>
-    <v-footer :fixed="fixed" app>
-      <span>&copy; 2017</span>
+    <v-footer :fixed="fixed" app class="pl-2 pr-2">
+      <span>&copy; 2018</span>
     </v-footer>
   </v-app>
 </template>
@@ -72,17 +71,23 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
+import UserView from './components/UserView.vue'
 import HelloWorld from './components/HelloWorld.vue'
+import VButton from './components/Button.vue'
 
 @Component({
   components: {
-    HelloWorld
+    UserView,
+    HelloWorld,
+    VButton
   }
 })
 export default class App extends Vue {
-  clipped: boolean = false;
-  drawer: boolean = true;
+  // Navigation drawer
+  clipped: boolean = true;
+  drawer: boolean = false;
   fixed: boolean = false;
+  buttonText: string = 'echo';
   items = [
     {
       icon: 'bubble_chart',
@@ -90,9 +95,39 @@ export default class App extends Vue {
     }
   ];
   miniVariant: boolean = false;
-  right: boolean = true;
-  rightDrawer: boolean = false;
-  title: string = 'Vuetify.js';
+
+  // Top toolbar
+  title: string = 'HYU-blog';
+
   msg: string = 'Rua!';
+
+  // User view
+  userInfo = {
+    avatar: '',
+    userId: 256,
+    userName: 'Admin',
+    extraInfo: 'Administrator of HYU-blog'
+  };
 }
 </script>
+
+<style>
+html {
+  overflow-y: auto
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E0E0E0;
+  border: none;
+}
+
+::-webkit-scrollbar-track-piece {
+  background: 0 0;
+}
+</style>
+
+

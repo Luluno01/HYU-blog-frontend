@@ -28,14 +28,12 @@ import {
   Watch
 } from 'vue-property-decorator'
 
-@Component
-export default class HelloWorld extends Vue {
-  @Prop({
-    type: String,
-    default: ''
-  })
-  msg: string = '';
-}
+@Component({
+  props: {
+    msg: String
+  }
+})
+export default class HelloWorld extends Vue {}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
