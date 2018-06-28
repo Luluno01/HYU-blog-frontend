@@ -104,9 +104,9 @@ export default class App extends Vue {
   // User view
   userInfo = {
     avatar: '',
-    userId: 256,
-    userName: 'Admin',
-    extraInfo: 'Administrator of HYU-blog'
+    id: 256,
+    nickname: 'Admin',
+    isBlogger: true
   };
 }
 </script>

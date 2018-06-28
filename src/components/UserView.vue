@@ -10,18 +10,25 @@
         <v-container fluid grid-list-lg>
           <v-layout row>
             <v-flex>
-              <v-card-media
+              <v-avatar
+                :tile="false"
+                :size="miniVariant ? 24 : 125"
+                color="grey lighten-4"
+              >
+                <img :src="userInfo.avatar || defaultAvatar" alt="avatar">
+              </v-avatar>
+              <!-- <v-card-media
                 :src="userInfo.avatar || defaultAvatar"
                 :height="miniVariant ? '24px' : '125px'"
                 contain
-              ></v-card-media>
+              ></v-card-media> -->
             </v-flex>
             <v-flex xs7 v-show="!miniVariant">
               <v-layout align-center justify-left fill-height pl-1>
                 <div>
-                  <div class="headline">{{ userInfo.userName }}</div>
-                  <div class="subheading" v-show="userInfo.userId">UID: {{ userInfo.userId }}</div>
-                  <div>{{ userInfo.extraInfo }}</div>
+                  <div class="headline">{{ userInfo.nickname }}</div>
+                  <div class="subheading" v-if="userInfo.id">UID: {{ userInfo.id }}</div>
+                  <div v-if="userInfo.isBlogger">{{ userInfo.isBlogger ? 'Blogger' : 'Visitor' }}</div>
                 </div>
               </v-layout>
             </v-flex>
@@ -106,9 +113,9 @@ export default class UserView extends Vue {
   //   )
   // }
   get defaultAvatar(): string {
-    let userName: string = (this as any).userInfo.userName
-    let userId: string = (this as any).userInfo.userId.toString()
-    return generateAvatar(userName, userId)
+    let nickname: string = (this as any).userInfo.nickname
+    let id: string = (this as any).userInfo.id.toString()
+    return generateAvatar(nickname, id)
   }
 }
 </script>

@@ -4,6 +4,7 @@ import Home from './components/Home.vue'
 import About from './views/About.vue'
 import Splash from './components/Splash.vue'
 import HotBlogs from './components/HotBlogs.vue'
+import Blog from './components/Blog.vue'
 
 Vue.use(Router)
 
@@ -32,9 +33,14 @@ export default new Router({
       ]
     },
     {
+      path: '/blog',
+      name: 'blog',
+      component: Blog
+    },
+    {
       path: '/about',
       name: 'about',
-      component: About,
+      component: About
     }
   ]
 })

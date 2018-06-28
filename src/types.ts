@@ -4,7 +4,7 @@ export interface BlogBrief {
   author: string
   uid: number
   avatar: string
-  subtitle: string
+  time: Date
 }
 
 export interface Header { header: string }

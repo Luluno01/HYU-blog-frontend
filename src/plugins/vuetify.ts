@@ -13,7 +13,9 @@ import {
   VCard,
   VDivider,
   VSubheader,
-  VProgressCircular
+  VProgressCircular,
+  VDataTable,
+  VAvatar
 } from 'vuetify'
 import 'vuetify/src/stylus/app.styl'
 
@@ -31,7 +33,9 @@ let conf = {
     VCard,
     VDivider,
     VSubheader,
-    VProgressCircular
+    VProgressCircular,
+    VDataTable,
+    VAvatar
   },
   theme: {
     primary: '#00838F',

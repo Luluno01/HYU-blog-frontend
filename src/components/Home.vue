@@ -1,6 +1,6 @@
 <template>
   <div class="viewport">
-    <v-fade-transition>
+    <v-fade-transition mode="out-in">
       <router-view></router-view>
     </v-fade-transition>
   </div>
