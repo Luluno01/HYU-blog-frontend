@@ -18,10 +18,11 @@
         <vue-markdown>{{ blog.text }}</vue-markdown>
       </v-layout>
     </v-container>
-    <p class="text-xs-center">End.</p>
+    <!-- End marker -->
+    <p class="text-xs-center"><v-icon>check</v-icon>End.</p>
     <!-- Comment -->
     <strong class="subheading">{{ this.$store.state.blog.comments.length }} Comment{{ this.$store.state.blog.comments.length > 1 ? 's' : '' }}</strong>
-    <v-container mx-0 px-0 pt-0>
+    <v-container mx-0 px-0 pt-0 v-if="this.$store.state.blog.comments.length">
       <comment v-for="comment in this.$store.state.blog.comments" :key="comment.id" :comment="comment"></comment>
     </v-container>
   </v-container>
