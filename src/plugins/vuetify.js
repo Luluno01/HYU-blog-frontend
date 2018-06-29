@@ -15,7 +15,13 @@ import {
   VSubheader,
   VProgressCircular,
   VDataTable,
-  VAvatar
+  VAvatar,
+  VAlert,
+  VRadioGroup,
+  VDialog,
+  VSnackbar,
+  VForm,
+  VTextField
 } from 'vuetify'
 import 'vuetify/src/stylus/app.styl'
 
@@ -35,7 +41,13 @@ let conf = {
     VSubheader,
     VProgressCircular,
     VDataTable,
-    VAvatar
+    VAvatar,
+    VAlert,
+    VRadioGroup,
+    VDialog,
+    VSnackbar,
+    VForm,
+    VTextField
   },
   theme: {
     primary: '#00838F',

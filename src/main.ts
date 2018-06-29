@@ -4,7 +4,11 @@ import store from './store'
 import './plugins/vuetify'
 import App from './App.vue'
 import router from './router'
+import sdk from './Lib/sdk'
+console.log(sdk.User)
 
+import 'vue-material-design-icons/styles.css'
+import './assets/css/public.css'
 import './assets/css/font.css'
 import './assets/css/unselectable.css'
 

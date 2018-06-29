@@ -5,6 +5,10 @@ import About from './views/About.vue'
 import Splash from './components/Splash.vue'
 import HotBlogs from './components/HotBlogs.vue'
 import Blog from './components/Blog.vue'
+import Ballot from './components/Ballot.vue'
+import Profile from './components/Profile.vue'
+import Signup from './components/Signup.vue'
+import Login from './components/Login.vue'
 
 Vue.use(Router)
 
@@ -33,9 +37,29 @@ export default new Router({
       ]
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: Profile
+    },
+    {
       path: '/blog',
       name: 'blog',
       component: Blog
+    },
+    {
+      path: '/ballot',
+      name: 'ballot',
+      component: Ballot
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: Signup
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
     },
     {
       path: '/about',

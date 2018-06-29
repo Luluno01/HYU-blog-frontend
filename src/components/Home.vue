@@ -21,6 +21,7 @@ import Splash from './Splash.vue'
 import HotBlogs from './HotBlogs.vue'
 import generateAvatar from '../Lib/generateAvatar'
 import { BlogList } from '../types'
+import { Route } from 'vue-router'
 
 
 @Component({
@@ -33,18 +34,22 @@ export default class Home extends Vue {
   get blogsBrief(): BlogList {
     return this.$store.state.blogBrief
   }
-  mounted() {
+
+  refresh(): void {
     this.$router.replace('loading')
-    let _this: any = this
+    let _this = this
     this.$store.dispatch('refreshBlogBrief', () => {
       _this.$router.replace('blogs')
     })
   }
+
+  mounted(): void {
+    this.refresh()
+  }
+
+  @Watch('$route')
+  onRouteChange(to: Route, from: Route) {
+    if(to.name == 'home') this.refresh()
+  }
 }
 </script>
-
-<style scoped>
-.viewport {
-  height: 100%;
-}
-</style>

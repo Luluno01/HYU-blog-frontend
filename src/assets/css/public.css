@@ -1,0 +1,7 @@
+.viewport {
+  height: 100%;
+}
+
+.material-design-icon > .material-design-icon__svg {
+  bottom: inherit !important;
+}

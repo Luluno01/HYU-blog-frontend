@@ -1,6 +1,6 @@
 <template>
   <v-layout>
-    <v-flex xs12>
+    <v-flex xs12 @click="$emit('click')">
       <v-card flat color="">
         <!-- <v-toolbar dark color="primary">
           <v-toolbar-title>{{ userId }}</v-toolbar-title>
@@ -8,15 +8,18 @@
           <slot></slot>
         </v-toolbar> -->
         <v-container fluid grid-list-lg>
-          <v-layout row>
+          <v-layout row justify-center align-center py-2>
             <v-flex>
-              <v-avatar
-                :tile="false"
-                :size="miniVariant ? 24 : 125"
-                color="grey lighten-4"
-              >
-                <img :src="userInfo.avatar || defaultAvatar" alt="avatar">
-              </v-avatar>
+              <v-layout justify-center align-center>
+                <v-avatar
+                  :tile="false"
+                  :size="miniVariant ? 24 : 125"
+                  color="grey lighten-4"
+                  class="justify-center align-center"
+                >
+                  <img :src="userInfo.avatar || defaultAvatar" alt="avatar">
+                </v-avatar>
+              </v-layout>
               <!-- <v-card-media
                 :src="userInfo.avatar || defaultAvatar"
                 :height="miniVariant ? '24px' : '125px'"
@@ -24,7 +27,7 @@
               ></v-card-media> -->
             </v-flex>
             <v-flex xs7 v-show="!miniVariant">
-              <v-layout align-center justify-left fill-height pl-1>
+              <v-layout align-center justify-left fill-height pl-2>
                 <div>
                   <div class="headline">{{ userInfo.nickname }}</div>
                   <div class="subheading" v-if="userInfo.id">UID: {{ userInfo.id }}</div>

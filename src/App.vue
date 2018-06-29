@@ -10,8 +10,10 @@
       app
     >
       <user-view
-        :user-info="userInfo"
+        :user-info="$store.state.user"
         :mini-variant="miniVariant"
+        ripple
+        @click="profileOrLogin"
       />
       <v-divider></v-divider>
       <v-list>
@@ -19,12 +21,40 @@
           value="true"
           v-for="(item, i) in items"
           :key="i"
+          ripple
+          @click.stop="$router.replace(item.link)"
         >
           <v-list-tile-action>
             <v-icon v-html="item.icon"></v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title v-text="item.title"></v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile
+          value="true"
+          ripple
+          @click.stop="$router.replace('signup')"
+          v-if="!user.loggedIn"
+        >
+          <v-list-tile-action>
+            <account-plus class="icon"/>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Sign up</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile
+          value="true"
+          ripple
+          @click.stop="logout()"
+          v-if="user.loggedIn"
+        >
+          <v-list-tile-action>
+            <logout class="icon"/>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Logout</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
       </v-list>
@@ -53,7 +83,7 @@
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon replace to="/about">
-        <i class="material-icons">help</i>
+        <v-icon>help</v-icon>
       </v-btn>
     </v-toolbar>
     <v-content>
@@ -62,24 +92,45 @@
         <router-view></router-view>
       </v-slide-y-transition>
     </v-content>
-    <v-footer :fixed="fixed" app class="pl-2 pr-2">
+    <v-snackbar
+      :timeout="snackbar.timeout"
+      :bottom="true"
+      v-model="snackbarVisible"
+    >
+      {{ snackbar.text }}
+      <v-btn flat color="pink" @click.native="snackbarVisible = false">Close</v-btn>
+    </v-snackbar>
+    <v-footer :fixed="fixed" app class="px-2 hidden-md-and-down">
       <span>&copy; 2018</span>
     </v-footer>
   </v-app>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component'
+import {
+  Component,
+  Emit,
+  Inject,
+  Model,
+  Prop,
+  Provide,
+  Vue,
+  Watch
+} from 'vue-property-decorator'
 import UserView from './components/UserView.vue'
 import HelloWorld from './components/HelloWorld.vue'
 import VButton from './components/Button.vue'
+import User from './Lib/sdk/User'
+import Logout from 'vue-material-design-icons/login.vue'
+import AccountPlus from 'vue-material-design-icons/account-plus.vue'
 
 @Component({
   components: {
     UserView,
     HelloWorld,
-    VButton
+    VButton,
+    Logout,
+    AccountPlus
   }
 })
 export default class App extends Vue {
@@ -90,24 +141,50 @@ export default class App extends Vue {
   buttonText: string = 'echo';
   items = [
     {
-      icon: 'bubble_chart',
-      title: 'Inspire'
+      icon: 'home',
+      title: 'Home Page',
+      link: '/'
     }
   ];
   miniVariant: boolean = false;
 
+  get snackbar() {
+    return this.$store.state.snackbar
+  }
+
+  get snackbarVisible(): boolean {
+    return this.snackbar.snackbar
+  }
+
+  set snackbarVisible(s: boolean) {
+    this.$store.commit('snackbarVisible', s)
+  }
+
+  profileOrLogin(): void {
+    this.$router.replace(this.user.loggedIn ? 'profile' : 'login')
+  }
+
   // Top toolbar
   title: string = 'HYU-blog';
 
-  msg: string = 'Rua!';
+  mounted(): void {
+    this.$store.dispatch('updateLoginState')
+  }
 
-  // User view
-  userInfo = {
-    avatar: '',
-    id: 256,
-    nickname: 'Admin',
-    isBlogger: true
-  };
+  get user(): User {
+    return this.$store.state.user
+  }
+
+  logout(): void {
+    this.$store.dispatch('logout', err => {
+      this.snackbar.snackbar = true
+      if(err) {
+        this.snackbar.text = err.message
+      } else {
+        this.snackbar.text = 'Logged out'
+      }
+    })
+  }
 }
 </script>
 
