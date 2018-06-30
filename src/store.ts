@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import User from './Lib/sdk/User'
 import generateAvatar from './Lib/generateAvatar'
 import { BlogList } from './types'
+import Blog from './Lib/sdk/Blog'
 
 Vue.use(Vuex)
 
@@ -13,7 +14,7 @@ let defaultUser = new User({
   nickname: 'Login',
   isBlogger: false,
   isAdmin: false,
-  avatar: require('@/assets/logo.png')
+  avatar: generateAvatar('HYU-blog', 0) // require('@/assets/logo.png')
 })
 
 export default new Vuex.Store({
@@ -24,13 +25,27 @@ export default new Vuex.Store({
       text: ''
     },
     user: defaultUser,
+    profileUser: defaultUser,
     // {
     //   avatar: require('@/assets/logo.png'),
     //   id: 0,
     //   nickname: null,
     //   isBlogger: null
     // },
-    blogBrief: [] as BlogList,
+    hotBlogsPage: {
+      pageNum: 1,
+      pageSize: 25,
+      count: 0,
+      ascend: false
+    },
+    hotBlogs: [] as Blog[],
+    profilePage: {
+      pageNum: 1,
+      pageSize: 25,
+      count: 0,
+      ascend: false
+    },
+    profileBlogs: [] as Blog[],
     ballot: {
       id: 1,
       title: 'Ballot Title',
@@ -103,11 +118,11 @@ export default new Vuex.Store({
         user.loggedIn = true
         if(!user.avatar || user.avatar == 'default') user.avatar = generateAvatar(user.nickname, user.id)
         state.user = new User(user)
-        console.log('User logged in', user)
+        console.log('User logged in', state.user)
       }
     },
-    setBlogBrief(state, blogBrief: BlogList): void {
-      state.blogBrief = blogBrief
+    setHotBlogs(state, hotBlogs: Blog[]): void {
+      state.hotBlogs = hotBlogs
     },
     vote(state, votedOption: number) {
       Object.defineProperty(state.ballot, 'chosen', {
@@ -116,9 +131,29 @@ export default new Vuex.Store({
         configurable: true,
         enumerable: true
       })
+    },
+    setPageNum(state, pageNum: number) {
+      state.hotBlogsPage.pageNum = pageNum
+    },
+    setPageSize(state, pageSize: number) {
+      state.hotBlogsPage.pageSize = pageSize
+    },
+    setCount(state, count: number) {
+      state.hotBlogsPage.count = count
+    },
+    setAscend(state, ascend: boolean) {
+      state.hotBlogsPage.ascend = !!ascend
+    },
+
+    setProfileUser(state, user: User) {
+      state.profileUser = user
+    },
+    setProfileBlogs(state, blogs: Blog[]) {
+      state.profileBlogs = blogs
     }
   },
   actions: {
+    // User
     signup({ commit }, opt: { username: string; nickname: string; password: string, onComplete?: (err?) => void }): void {
       let onComplete = opt.onComplete
       User.signup(opt)
@@ -162,16 +197,46 @@ export default new Vuex.Store({
         if(typeof onComplete == 'function') onComplete()
       })
     },
-    refreshBlogBrief({ commit }, onComplete?: () => void) {
-      let res: BlogList = []
-      for(let i = 0; i < 9; i++) {
-        res.push({ title: 'Rua!', id: i, avatar: generateAvatar('Admin', i), author: 'Admin', uid: i, time: (new Date) })
-        // res.push({ divider: true, inset: false })
-      }
-      setTimeout(() => {
-        commit('setBlogBrief', res)
+
+    // Hot blogs
+    refreshHotBlogs({ commit, state }, onComplete?: (err?) => void) {
+      Blog.getHotBlogs(state.hotBlogsPage.pageNum, state.hotBlogsPage.pageSize, state.hotBlogsPage.ascend)
+      .then(([blogs, count]) => {
+        commit('setHotBlogs', blogs)
+        commit('setCount', count)
         if(typeof onComplete == 'function') onComplete()
-      }, 3000)
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
+    // Profile
+    setProfileUser({ commit, dispatch }, opt: { id: number; onComplete?: (err?) => void }) {
+      User.get(opt.id)
+      .then(user => {
+        commit('setProfileUser', user)
+        console.log('User found', user)
+        dispatch('refreshProfileBlogs', opt.onComplete)
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof opt.onComplete == 'function') opt.onComplete(err)
+      })
+    },
+    refreshProfileBlogs({ commit, state }, onComplete?: (err?) => void) {
+      state.profileUser.getBlogs(state.profilePage.pageNum, state.profilePage.pageSize, state.profilePage.ascend)
+      .then(([blogs, count]) => {
+        console.log('User\'s blog list get', blogs)
+        commit('setProfileBlogs', blogs)
+        commit('setCount', count)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
     }
   }
 })

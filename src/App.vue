@@ -82,9 +82,16 @@
       </v-slide-x-transition>
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon replace to="/about">
-        <v-icon>help</v-icon>
-      </v-btn>
+      <v-slide-x-transition mode="out-in">
+        <v-btn icon replace to="/about">
+          <v-icon>help</v-icon>
+        </v-btn>
+      </v-slide-x-transition>
+      <v-slide-x-transition mode="out-in">
+        <v-btn icon>
+          <v-icon>refresh</v-icon>
+        </v-btn>
+      </v-slide-x-transition>
     </v-toolbar>
     <v-content>
       <!-- Main content -->
@@ -161,11 +168,27 @@ export default class App extends Vue {
   }
 
   profileOrLogin(): void {
-    this.$router.replace(this.user.loggedIn ? 'profile' : 'login')
+    if(this.user.loggedIn) {
+      this.$store.dispatch('setProfileUser', {
+        id: this.user.id,
+        onComplete: err => {
+          if(err) {
+            this.snackbarVisible = true
+            this.snackbar.text = 'Unable to get profile : ('
+          } else {
+            this.$router.replace('/profile')
+          }
+        }
+      })
+    } else this.$router.replace('/login')
   }
 
   // Top toolbar
-  title: string = 'HYU-blog';
+  // title: string = 'HYU-blog';
+  get title(): string {
+    if(this.$route.name == 'home' || this.$route.name == 'blogs') return 'HYU-blog'
+    return this.$route.name && ((this.$route.name[0]).toUpperCase() + this.$route.name.substring(1)) || 'HYU-blog'
+  }
 
   mounted(): void {
     this.$store.dispatch('updateLoginState')
@@ -183,6 +206,7 @@ export default class App extends Vue {
       } else {
         this.snackbar.text = 'Logged out'
       }
+      if(this.$route.name == 'profile') this.$router.replace('/login')
     })
   }
 }

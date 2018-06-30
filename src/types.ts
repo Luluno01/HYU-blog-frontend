@@ -1,11 +1,4 @@
-export interface BlogBrief {
-  title: string
-  id: number
-  author: string
-  uid: number
-  avatar: string
-  time: Date
-}
+import Blog from './Lib/sdk/Blog'
 
 export interface Header { header: string }
 
@@ -14,4 +7,4 @@ export interface Divider {
   inset: boolean
 }
 
-export type BlogList = (BlogBrief | Header | Divider)[]
+export type BlogList = (Blog | Header | Divider)[]

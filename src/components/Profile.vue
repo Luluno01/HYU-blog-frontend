@@ -47,7 +47,7 @@ import HotBlogs from './HotBlogs.vue'
 export default class Profile extends Vue {
   dummy: number = 1
   get user() {
-    return this.$store.state.user
+    return this.$store.state.profileUser
   }
 }
 </script>
