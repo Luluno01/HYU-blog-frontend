@@ -29,7 +29,7 @@
                   <a class="pl-2" href="#" @click="showProfile(props.item.owner.id)">{{ props.item.owner.nickname }}</a>
                 </v-layout>
               </td>
-              <td class="text-xs-left"><router-link to="blog">{{ props.item.title }}</router-link></td>
+              <td class="text-xs-left"><a href="#" @click="to(props.item.id)">{{ props.item.title }}</a></td>
               <td class="text-xs-right">{{ new Date(props.item.updatedAt).toLocaleString() }}</td>
             </template>
             <template slot="no-data">
@@ -43,25 +43,27 @@
     </v-slide-y-transition>
     <!-- Mobile -->
     <v-slide-y-transition mode="out-in">
-      <v-list fluid class="hidden-md-and-up">
+      <v-list fluid class="hidden-md-and-up" ref="mobile" v-scroll="onScroll">
         <template v-for="(blog, index) in blogList">
-          <v-subheader v-if="blog.header" :key="blog.header">{{ blog.header }}</v-subheader>
-          <v-divider v-else-if="blog.divider" :inset="blog.inset" :key="index"></v-divider>
-          <v-list-tile v-else-if="!profile" :key="index" avatar @click="to(blog.id)">
-            <v-list-tile-avatar>
-              <img :src="blog.owner.avatar" @click="showProfile(props.item.owner.id)">
-            </v-list-tile-avatar>
-            <v-list-tile-content>
-              <v-list-tile-title v-html="blog.title"></v-list-tile-title>
-              <v-list-tile-sub-title v-html="new Date(blog.updatedAt).toLocaleString()"></v-list-tile-sub-title>
-            </v-list-tile-content>
-          </v-list-tile>
-          <v-list-tile v-else :key="index" @click="to(blog.id)">
-            <v-list-tile-content>
-              <v-list-tile-title v-html="blog.title"></v-list-tile-title>
-              <v-list-tile-sub-title v-html="new Date(blog.updatedAt).toLocaleString()"></v-list-tile-sub-title>
-            </v-list-tile-content>
-          </v-list-tile>
+          <v-fade-transition :key="index">
+            <v-subheader v-if="blog.header" :key="blog.header">{{ blog.header }}</v-subheader>
+            <v-divider v-else-if="blog.divider" :inset="blog.inset" :key="index"></v-divider>
+            <v-list-tile v-else-if="!profile" :key="index" avatar @click="to(blog.id)">
+              <v-list-tile-avatar>
+                <img :src="blog.owner.avatar" @click="showProfile(props.item.owner.id)">
+              </v-list-tile-avatar>
+              <v-list-tile-content>
+                <v-list-tile-title v-html="blog.title"></v-list-tile-title>
+                <v-list-tile-sub-title v-html="new Date(blog.updatedAt).toLocaleString()"></v-list-tile-sub-title>
+              </v-list-tile-content>
+            </v-list-tile>
+            <v-list-tile v-else :key="index" @click="to(blog.id)">
+              <v-list-tile-content>
+                <v-list-tile-title v-html="blog.title"></v-list-tile-title>
+                <v-list-tile-sub-title v-html="new Date(blog.updatedAt).toLocaleString()"></v-list-tile-sub-title>
+              </v-list-tile-content>
+            </v-list-tile>
+          </v-fade-transition>
         </template>
       </v-list>
     </v-slide-y-transition>
@@ -79,6 +81,7 @@ import {
   Vue,
   Watch
 } from 'vue-property-decorator'
+import getScroll from '../Lib/getScroll'
 import { BlogList } from '../types'
 
 
@@ -141,7 +144,45 @@ export default class HotBlogs extends Vue {
     return this.snackbar.snackbar
   }
 
+  onScroll(): void {
+    if(getScroll.reachedBottom && (this.$refs.mobile as any).$el.clientHeight) {
+      console.log('Loading more')
+      let oldNum: number = this.blogs.length
+      this.$store.commit(this.profile ? 'setProfilePageNum' : 'setPageNum', (this.profile ? this.$store.state.profilePage.pageNum : this.$store.state.hotBlogsPage.pageNum) + 1)
+      this.$store.dispatch(this.profile ? 'appendProfileBlogs' : 'appendHotBlogs', err => {
+        if(err) {
+          this.snackbarVisible = true
+          this.snackbar.text = err.message || 'Unable to get blog list : ('
+          this.$store.commit(this.profile ? 'setProfilePageNum' : 'setPageNum', (this.profile ? this.$store.state.profilePage.pageNum : this.$store.state.hotBlogsPage.pageNum) - 1)
+        } else {
+          if(this.blogs.length == oldNum) {
+            this.snackbarVisible = true
+            this.snackbar.text = 'No more blogs'
+            this.$store.commit(this.profile ? 'setProfilePageNum' : 'setPageNum', (this.profile ? this.$store.state.profilePage.pageNum : this.$store.state.hotBlogsPage.pageNum) - 1)
+          }
+        }
+      })
+    }
+  }
+
+  mounted() {
+    this.$store.commit('setProfilePageNum', 1)
+    this.$store.commit('setProfilePageSize', 15)
+  }
+
+  @Watch('$route')
+  resetPage(to, from) {
+    if(to.name == 'blogs') {
+      this.$store.commit('setProfilePageNum', 1)
+      this.$store.commit('setProfilePageSize', 15)
+      this.$store.commit('setPageNum', 1)
+      this.$store.commit('setPageSize', 15)
+    }
+  }
+
   showProfile(id: number): void {
+    this.$store.commit('setProfilePageNum', 1)
+    this.$store.commit('setProfilePageSize', 15)
     this.$store.dispatch('setProfileUser', {
       id,
       onComplete: (err?) => {
@@ -158,9 +199,9 @@ export default class HotBlogs extends Vue {
   @Watch('pagination', { deep: true })
   onPaginationChange() {
     this.loading = true
-    this.$store.commit('setPageNum', this.pagination.page)
-    this.$store.commit('setPageSize', this.pagination.rowsPerPage)
-    this.$store.commit('setAscend', !this.pagination.descending)
+    this.$store.commit(this.profile ? 'setProfilePageNum' : 'setPageNum', this.pagination.page)
+    this.$store.commit(this.profile ? 'setProfilePageSize' : 'setPageSize', this.pagination.rowsPerPage)
+    this.$store.commit(this.profile ? 'setProfileAscend' : 'setAscend', !this.pagination.descending)
     this.$store.dispatch(this.profile ? 'refreshProfileBlogs' : 'refreshHotBlogs', err => {
       this.loading = false
       if(err) {
@@ -172,7 +213,7 @@ export default class HotBlogs extends Vue {
 
   get blogList(): BlogList {
     let list: BlogList = [{ header: this.profile ? 'Blog list' : 'Hot blogs' }]
-    let _list = this.$store.state.hotBlogs
+    let _list = this.blogs
     for(let blog of _list) {
       list.push(blog)
       list.push({ divider: true, inset: false })
@@ -182,8 +223,18 @@ export default class HotBlogs extends Vue {
   get blogs(): BlogList {
     return this.profile ? this.$store.state.profileBlogs : this.$store.state.hotBlogs
   }
-  to(blogId: number): void {
-    this.$router.replace(`/blog/${blogId}`)
+  to(id: number): void {
+    this.$store.dispatch('getBlog', {
+      id,
+      onComplete: (err?) => {
+        if(err) {
+          this.snackbarVisible = true
+          this.snackbar.text = err.message || 'Unable to get blog details : ('
+        } else {
+          this.$router.replace('/blog')
+        }
+      }
+    })
   }
 }
 </script>

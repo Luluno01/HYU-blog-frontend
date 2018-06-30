@@ -2,19 +2,38 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import User from './Lib/sdk/User'
 import generateAvatar from './Lib/generateAvatar'
-import { BlogList } from './types'
 import Blog from './Lib/sdk/Blog'
+import Comment from '@/Lib/sdk/Comment';
 
 Vue.use(Vuex)
 
 let defaultUser = new User({
-  updatedAt: 0,
-  createdAt: 0,
+  updatedAt: Date.now(),
+  createdAt: Date.now(),
   id: 0,
   nickname: 'Login',
   isBlogger: false,
   isAdmin: false,
   avatar: generateAvatar('HYU-blog', 0) // require('@/assets/logo.png')
+})
+
+let defaultBlog = new Blog({
+  updatedAt: Date.now(),
+  createdAt: Date.now(),
+  id: 0,
+  title: 'Dummy Blog',
+  text: '# Dummy Blog\n\nThis is a **dummy** blog.\n',
+  published: true,
+  owner: defaultUser,
+  comments: [
+    new Comment({
+      id: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      text: '**Dummy** comment',
+      owner: defaultUser
+    })
+  ]
 })
 
 export default new Vuex.Store({
@@ -65,42 +84,43 @@ export default new Vuex.Store({
       ],
       // chosen: 5
     },
-    blog: {
-      id: 0,
-      title: 'Title',
-      text: '# rua\n\n* fasdf\n* piuoiuo',
-      owner: {
-        avatar: generateAvatar('Admin', 256),
-        userId: 256,
-        userName: 'Admin',
-        extraInfo: 'Administrator of HYU-blog'
-      },
-      time: (new Date),
-      comments: [
-        {
-          id: 2,
-          owner: {
-            avatar: generateAvatar('Admin', 256),
-            userId: 256,
-            userName: 'Admin',
-            extraInfo: 'Administrator of HYU-blog'
-          },
-          text: 'echo rua\n\n* asdffasdf\n* plilkjk',
-          time: new Date
-        },
-        {
-          id: 3,
-          owner: {
-            avatar: generateAvatar('Test', 1),
-            userId: 1,
-            userName: 'Test',
-            extraInfo: 'test'
-          },
-          text: 'echo rua\n\n* asdffasdf\n* plilkjk',
-          time: new Date
-        }
-      ]
-    }
+    blog: defaultBlog,
+    // {
+    //   id: 0,
+    //   title: 'Title',
+    //   text: '# rua\n\n* fasdf\n* piuoiuo',
+    //   owner: {
+    //     avatar: generateAvatar('Admin', 256),
+    //     userId: 256,
+    //     userName: 'Admin',
+    //     extraInfo: 'Administrator of HYU-blog'
+    //   },
+    //   time: (new Date),
+    //   comments: [
+    //     {
+    //       id: 2,
+    //       owner: {
+    //         avatar: generateAvatar('Admin', 256),
+    //         userId: 256,
+    //         userName: 'Admin',
+    //         extraInfo: 'Administrator of HYU-blog'
+    //       },
+    //       text: 'echo rua\n\n* asdffasdf\n* plilkjk',
+    //       time: new Date
+    //     },
+    //     {
+    //       id: 3,
+    //       owner: {
+    //         avatar: generateAvatar('Test', 1),
+    //         userId: 1,
+    //         userName: 'Test',
+    //         extraInfo: 'test'
+    //       },
+    //       text: 'echo rua\n\n* asdffasdf\n* plilkjk',
+    //       time: new Date
+    //     }
+    //   ]
+    // }
   },
   mutations: {
     snackbar(state, conf: { timeout?: number; text: string }): void {
@@ -124,6 +144,9 @@ export default new Vuex.Store({
     setHotBlogs(state, hotBlogs: Blog[]): void {
       state.hotBlogs = hotBlogs
     },
+    appendHotBlogs(state, blogs: Blog[]) {
+      state.hotBlogs = state.hotBlogs.concat(blogs)
+    },
     vote(state, votedOption: number) {
       Object.defineProperty(state.ballot, 'chosen', {
         value: votedOption,
@@ -146,10 +169,30 @@ export default new Vuex.Store({
     },
 
     setProfileUser(state, user: User) {
-      state.profileUser = user
+      state.profileUser = new User(user)
     },
     setProfileBlogs(state, blogs: Blog[]) {
       state.profileBlogs = blogs
+    },
+    appendProfileBlogs(state, blogs: Blog[]) {
+      state.profileBlogs = state.profileBlogs.concat(blogs)
+    },
+    setProfilePageNum(state, pageNum: number) {
+      state.profilePage.pageNum = pageNum
+    },
+    setProfilePageSize(state, pageSize: number) {
+      state.profilePage.pageSize = pageSize
+    },
+    setProfileCount(state, count: number) {
+      state.profilePage.count = count
+    },
+    setProfileAscend(state, ascend: boolean) {
+      state.profilePage.ascend = !!ascend
+    },
+
+    // Blog
+    setBlog(state, blog: Blog) {
+      state.blog = blog
     }
   },
   actions: {
@@ -212,6 +255,19 @@ export default new Vuex.Store({
       })
     },
 
+    appendHotBlogs({ commit, state }, onComplete: (err?) => void) {
+      Blog.getHotBlogs(state.hotBlogsPage.pageNum, state.hotBlogsPage.pageSize, state.hotBlogsPage.ascend)
+      .then(([blogs, count]) => {
+        commit('appendHotBlogs', blogs)
+        commit('setCount', count)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
     // Profile
     setProfileUser({ commit, dispatch }, opt: { id: number; onComplete?: (err?) => void }) {
       User.get(opt.id)
@@ -236,6 +292,34 @@ export default new Vuex.Store({
       .catch(err => {
         console.error(err)
         if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
+    appendProfileBlogs({ commit, state }, onComplete: (err?) => void) {
+      state.profileUser.getBlogs(state.profilePage.pageNum, state.profilePage.pageSize, state.profilePage.ascend)
+      .then(([blogs, count]) => {
+        console.log('User\'s blog list get', blogs)
+        commit('appendProfileBlogs', blogs)
+        commit('setProfileCount', count)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
+    // Blog
+    getBlog({ commit }, opt: { id: number; onComplete: (err?) => void }) {
+      Blog.get(opt.id)
+      .then(blog => {
+        console.log('Blog get', blog)
+        commit('setBlog', blog)
+        if(typeof opt.onComplete == 'function') opt.onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof opt.onComplete == 'function') opt.onComplete(err)
       })
     }
   }

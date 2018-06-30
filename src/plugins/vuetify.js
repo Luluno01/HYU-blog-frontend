@@ -23,7 +23,10 @@ import {
   VForm,
   VTextField
 } from 'vuetify'
+import { Scroll } from 'vuetify/es5/directives'
 import 'vuetify/src/stylus/app.styl'
+
+Vue.directive('scroll', Scroll)
 
 let conf = {
   components: {

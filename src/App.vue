@@ -169,6 +169,8 @@ export default class App extends Vue {
 
   profileOrLogin(): void {
     if(this.user.loggedIn) {
+      this.$store.commit('setProfilePageNum', 1)
+      this.$store.commit('setProfilePageSize', 15)
       this.$store.dispatch('setProfileUser', {
         id: this.user.id,
         onComplete: err => {
