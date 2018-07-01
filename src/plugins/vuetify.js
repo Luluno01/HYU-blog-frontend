@@ -22,7 +22,10 @@ import {
   VSnackbar,
   VForm,
   VTextField,
-  VSpeedDial
+  VSpeedDial,
+  VTabs,
+  VJumbotron,
+  VExpansionPanel
 } from 'vuetify'
 import { Scroll } from 'vuetify/es5/directives'
 import 'vuetify/src/stylus/app.styl'
@@ -52,7 +55,10 @@ let conf = {
     VSnackbar,
     VForm,
     VTextField,
-    VSpeedDial
+    VSpeedDial,
+    VTabs,
+    VJumbotron,
+    VExpansionPanel
   },
   theme: {
     primary: '#00838F',

@@ -195,7 +195,7 @@ export default class Blog extends Vue {
       this.$store.dispatch('getBlog', {
         id: this.blog.id,
         onComplete: (err?) => {
-          if(!err) this.$nextTick(() => this.$vuetify.goTo(getScroll.scrollHeight))
+          if(!err) this.$nextTick(() => (this as any).$vuetify.goTo(getScroll.scrollHeight))
         }
       })
     })

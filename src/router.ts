@@ -10,6 +10,9 @@ import Profile from './components/Profile.vue'
 import Signup from './components/Signup.vue'
 import Login from './components/Login.vue'
 import EditBlog from './components/EditBlog.vue'
+import EditBallot from './components/EditBallot.vue'
+import HotBallots from './components/HotBallots.vue'
+import Notice from './components/Notice.vue'
 
 Vue.use(Router)
 
@@ -34,6 +37,11 @@ export default new Router({
           path: 'blogs',
           name: 'blogs',
           component: HotBlogs
+        },
+        {
+          path: 'ballots',
+          name: 'ballots',
+          component: HotBallots
         }
       ]
     },
@@ -91,6 +99,22 @@ export default new Router({
       component: EditBlog,
       meta: {
         title: 'Edit Blog'
+      }
+    },
+    {
+      path: '/edit-ballot',
+      name: 'edit-ballot',
+      component: EditBallot,
+      meta: {
+        title: 'Edit Ballot'
+      }
+    },
+    {
+      path: '/notice',
+      name: 'notice',
+      component: Notice,
+      meta: {
+        title: 'Notice'
       }
     }
   ]

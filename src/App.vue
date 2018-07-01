@@ -22,13 +22,25 @@
           v-for="(item, i) in items"
           :key="i"
           ripple
-          @click.stop="$router.replace(item.link)"
+          @click.stop="onItemClick(item)"
         >
           <v-list-tile-action>
             <v-icon v-html="item.icon"></v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title v-text="item.title"></v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile
+          value="true"
+          ripple
+          @click.stop="$router.replace('/notice')"
+        >
+          <v-list-tile-action>
+            <bell title="Notice" class="icon"/>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Notice</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
         <v-list-tile
@@ -41,6 +53,18 @@
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>Post Blog</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile
+          value="true"
+          ripple
+          @click.stop="postBallot"
+        >
+          <v-list-tile-action>
+            <book title="Post a new ballot" class="icon"/>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Post Ballot</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
         <v-list-tile
@@ -162,7 +186,17 @@ import User from './Lib/sdk/User'
 import Logout from 'vue-material-design-icons/login.vue'
 import AccountPlus from 'vue-material-design-icons/account-plus.vue'
 import Summit from 'vue-material-design-icons/summit.vue'
+import Book from 'vue-material-design-icons/book.vue'
+import Bell from 'vue-material-design-icons/bell.vue'
 import Alert from './components/Alert.vue'
+
+
+type Item = {
+  icon?: string
+  title: string
+  link?: string
+  mutation?: [ string, any ] | [ string ]
+}
 
 @Component({
   components: {
@@ -172,6 +206,8 @@ import Alert from './components/Alert.vue'
     Logout,
     AccountPlus,
     Summit,
+    Book,
+    Bell,
     Alert
   }
 })
@@ -181,15 +217,28 @@ export default class App extends Vue {
   drawer: boolean = false;
   fixed: boolean = false;
   buttonText: string = 'echo';
-  items = [
+  items: Item[] = [
     {
       icon: 'home',
       title: 'Home Page',
-      link: '/'
+      link: '/',
+      mutation: [ 'setHome', 'blogs' ]
+    },
+    {
+      icon: 'favorite',
+      title: 'Ballots',
+      link: '/',
+      mutation: [ 'setHome', 'ballots' ]
     }
   ];
   miniVariant: boolean = false;
   siteName: string = 'HYU-blog'
+
+  onItemClick(item: Item) {
+    console.log(this)
+    if(item.mutation) this.$store.commit(item.mutation[0], item.mutation[1])
+    if(item.link) this.$router.replace(item.link)
+  }
 
   alert = {
     alert: false,
@@ -214,7 +263,7 @@ export default class App extends Vue {
 
   @Watch('$route')
   onRouteChange(to): void {
-    if(to.name == 'blogs') this.clearSearch()
+    if(to.name == 'blogs' || to.name == 'ballots') this.clearSearch()
   }
 
   clearSearch(): void {
@@ -235,6 +284,22 @@ export default class App extends Vue {
     }
     this.$store.commit('setEdit', false)
     this.$router.replace('/edit-blog')
+  }
+
+  postBallot(): void {
+    if(!this.user.loggedIn) {
+      this.alert.alert = true
+      this.alert.title = 'Please login'
+      this.alert.text = 'You have to login first to proceed the operation'
+      return
+    } else if(!this.user.isBlogger && !this.user.isAdmin) {
+      this.alert.alert = true
+      this.alert.title = 'I\'m Sorry, but...'
+      this.alert.text = `You have to be a blogger or administrator.\nPlease contact the administrator of ${this.siteName} for more information.`
+      return
+    }
+    this.$store.commit('setEdit', false)
+    this.$router.replace('/edit-ballot')
   }
 
   get snackbar() {
@@ -290,14 +355,30 @@ export default class App extends Vue {
         id: this.$store.state.profileUser.id,
         onComplete: this.onComplete
       }); break
-      case 'blog': this.$store.dispatch('getBlog', {
-        id: this.$store.state.blog.id,
-        onComplete: this.onComplete
-      }); break
+      case 'blog': {
+        this.$store.dispatch('getBlog', {
+          id: this.$store.state.blog.id,
+          onComplete: this.onComplete
+        })
+        break
+      }
+      case 'ballot': {
+        this.$store.dispatch('getBallot', {
+          id: this.$store.state.ballot.id,
+          onComplete: this.onComplete
+        })
+        break
+      }
       case 'blogs': {
         this.clearSearch()
         this.$store.commit('setSearchWord', '')
         this.$store.dispatch('refreshHotBlogs', this.onComplete)
+        break
+      }
+      case 'ballots': {
+        this.clearSearch()
+        this.$store.commit('setSearchWord', '')
+        this.$store.dispatch('refreshHotBallots', this.onComplete)
       }
     }
   }

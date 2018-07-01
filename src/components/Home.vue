@@ -19,6 +19,7 @@ import {
 } from 'vue-property-decorator'
 import Splash from './Splash.vue'
 import HotBlogs from './HotBlogs.vue'
+import HotBallots from './HotBallots.vue'
 import generateAvatar from '../Lib/generateAvatar'
 import { BlogList } from '../types'
 
@@ -26,20 +27,23 @@ import { BlogList } from '../types'
 @Component({
   components: {
     Splash,
-    HotBlogs
+    HotBlogs,
+    HotBallots
   }
 })
 export default class Home extends Vue {
-  get hotBlogs(): BlogList {
-    return this.$store.state.hotBlogs
-  }
-
   refresh(): void {
     this.$router.replace('loading')
     let _this = this
-    this.$store.dispatch('refreshHotBlogs', () => {
-      _this.$router.replace('blogs')
-    })
+    if(this.$store.state.home == 'blogs') {
+      this.$store.dispatch('refreshHotBlogs', () => {
+        _this.$router.replace('blogs')
+      })
+    } else {
+      this.$store.dispatch('refreshHotBallots', () => {
+        _this.$router.replace('ballots')
+      })
+    }
   }
 
   mounted(): void {

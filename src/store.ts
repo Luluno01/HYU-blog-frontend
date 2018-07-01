@@ -3,7 +3,9 @@ import Vuex from 'vuex'
 import User from './Lib/sdk/User'
 import generateAvatar from './Lib/generateAvatar'
 import Blog from './Lib/sdk/Blog'
-import Comment from '@/Lib/sdk/Comment';
+import Comment from './Lib/sdk/Comment';
+import Ballot from './Lib/sdk/Ballot';
+import Option from './Lib/sdk/Option';
 
 Vue.use(Vuex)
 
@@ -36,8 +38,49 @@ let defaultBlog = new Blog({
   ]
 })
 
+let defaultBallot = new Ballot({
+  updatedAt: Date.now(),
+  createdAt: Date.now(),
+  id: 0,
+  title: 'Dummy Ballot',
+  text: '# Dummy Ballot\n\nThis is a **dummy** ballot.\n',
+  published: true,
+  owner: defaultUser,
+  options: [
+    new Option({
+      id: 2,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      title: '**Dummy** option A',
+      votes: 5
+    }),
+    new Option({
+      id: 1,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      title: '**Dummy** option B',
+      votes: 10
+    }),
+    new Option({
+      id: 3,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      title: '**Dummy** option C',
+      votes: 51
+    }),
+    new Option({
+      id: 4,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      title: '**Dummy** option D',
+      votes: 26
+    })
+  ]
+})
+
 export default new Vuex.Store({
   state: {
+    home: 'blogs',
     snackbar: {
       snackbar: false,
       timeout: 3000,
@@ -52,6 +95,14 @@ export default new Vuex.Store({
       ascend: false
     },
     hotBlogs: [] as Blog[],
+    hotBallotsPage: {
+      pageNum: 1,
+      pageSize: 25,
+      count: 0,
+      ascend: false
+    },
+    hotBallots: [] as Ballot[],
+    ballot: defaultBallot,
     searchWord: '',
     profilePage: {
       pageNum: 1,
@@ -59,30 +110,21 @@ export default new Vuex.Store({
       count: 0,
       ascend: false
     },
-    profileBlogs: [] as Blog[],
-    ballot: {
-      id: 1,
-      title: 'Ballot Title',
-      text: '# rua\n\n* fasdf\n* piuoiuo',
-      owner: {
-        avatar: generateAvatar('Admin', 256),
-        userId: 256,
-        userName: 'Admin',
-        extraInfo: 'Administrator of HYU-blog'
-      },
-      time: (new Date),
-      options: [
-        { id: 1, title: 'Option A', votes: 50 },
-        { id: 5, title: 'Option B', votes: 20 },
-        { id: 3, title: 'Option C', votes: 12 },
-        { id: 4, title: 'Option D', votes: 23 }
-      ],
-      // chosen: 5
+    ballotProfilePage: {
+      pageNum: 1,
+      pageSize: 25,
+      count: 0,
+      ascend: false
     },
+    profileBallots: [] as Ballot[],
+    profileBlogs: [] as Blog[],
     blog: defaultBlog,
     edit: false
   },
   mutations: {
+    setHome(state, name: string) {
+      state.home = name
+    },
     snackbar(state, conf: { timeout?: number; text: string }): void {
       state.snackbar.timeout = conf.timeout || 3000
       state.snackbar.text = conf.text
@@ -110,6 +152,12 @@ export default new Vuex.Store({
     setSearchWord(state, str: string) {
       state.searchWord = str
     },
+    setHotBallots(state, hotBallots: Ballot[]) {
+      state.hotBallots = hotBallots
+    },
+    appendHotBallots(state, hotBallots: Ballot[]) {
+      state.hotBallots = state.hotBallots.concat(hotBallots)
+    },
     vote(state, votedOption: number) {
       Object.defineProperty(state.ballot, 'chosen', {
         value: votedOption,
@@ -131,6 +179,19 @@ export default new Vuex.Store({
       state.hotBlogsPage.ascend = !!ascend
     },
 
+    setBallotPageNum(state, pageNum: number) {
+      state.hotBallotsPage.pageNum = pageNum
+    },
+    setBallotPageSize(state, pageSize: number) {
+      state.hotBallotsPage.pageSize = pageSize
+    },
+    setBallotCount(state, count: number) {
+      state.hotBallotsPage.count = count
+    },
+    setBallotAscend(state, ascend: boolean) {
+      state.hotBallotsPage.ascend = !!ascend
+    },
+
     setProfileUser(state, user: User) {
       state.profileUser = new User(user)
     },
@@ -140,6 +201,14 @@ export default new Vuex.Store({
     appendProfileBlogs(state, blogs: Blog[]) {
       state.profileBlogs = state.profileBlogs.concat(blogs)
     },
+    
+    setProfileBallots(state, ballots: Ballot[]) {
+      state.profileBallots = ballots
+    },
+    appendProfileBallots(state, ballots: Ballot[]) {
+      state.profileBallots = state.profileBallots.concat(ballots)
+    },
+
     setProfilePageNum(state, pageNum: number) {
       state.profilePage.pageNum = pageNum
     },
@@ -153,9 +222,27 @@ export default new Vuex.Store({
       state.profilePage.ascend = !!ascend
     },
 
+    setBallotProfilePageNum(state, pageNum: number) {
+      state.ballotProfilePage.pageNum = pageNum
+    },
+    setBallotProfilePageSize(state, pageSize: number) {
+      state.ballotProfilePage.pageSize = pageSize
+    },
+    setBallotProfileCount(state, count: number) {
+      state.ballotProfilePage.count = count
+    },
+    setBallotProfileAscend(state, ascend: boolean) {
+      state.ballotProfilePage.ascend = !!ascend
+    },
+
     // Blog
     setBlog(state, blog: Blog) {
       state.blog = blog
+    },
+
+    // Ballot
+    setBallot(state, ballot: Ballot) {
+      state.ballot = ballot
     },
 
     // Edit blog
@@ -167,6 +254,14 @@ export default new Vuex.Store({
     },
     setText(state, text: string) {
       state.blog.text = text
+    },
+
+    // Edit ballot
+    setBallotTitle(state, title: string) {
+      state.ballot.title = title
+    },
+    setBallotText(state, text: string) {
+      state.ballot.text = text
     }
   },
   actions: {
@@ -242,6 +337,33 @@ export default new Vuex.Store({
       })
     },
 
+    // Hot ballots
+    refreshHotBallots({ commit, state }, onComplete?: (err?) => void) {
+      Ballot.getHotBallots({ ...state.hotBallotsPage as any, search: state.searchWord })
+      .then(([ballots, count]) => {
+        commit('setHotBallots', ballots)
+        commit('setBallotCount', count)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
+    appendHotBallots({ commit, state }, onComplete: (err?) => void) {
+      Ballot.getHotBallots({ ...state.hotBallotsPage as any, search: state.searchWord })
+      .then(([ballots, count]) => {
+        commit('appendHotBallots', ballots)
+        commit('setBallotCount', count)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
     // Profile
     setProfileUser({ commit, dispatch }, opt: { id: number; onComplete?: (err?) => void }) {
       User.get(opt.id)
@@ -268,13 +390,40 @@ export default new Vuex.Store({
         if(typeof onComplete == 'function') onComplete(err)
       })
     },
-
     appendProfileBlogs({ commit, state }, onComplete: (err?) => void) {
       state.profileUser.getBlogs(state.profilePage)
       .then(([blogs, count]) => {
         console.log('User\'s blog list get', blogs)
         commit('appendProfileBlogs', blogs)
         commit('setProfileCount', count)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
+    // Ballats in profile
+    refreshProfileBallots({ commit, state }, onComplete?: (err?) => void) {
+      state.profileUser.getBallots(state.ballotProfilePage)
+      .then(([ballots, count]) => {
+        console.log('User\'s ballot list get', ballots)
+        commit('setProfileBallots', ballots)
+        commit('setBallotProfileCount', count)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+    appendProfileBallots({ commit, state }, onComplete: (err?) => void) {
+      state.profileUser.getBallots(state.ballotProfilePage)
+      .then(([ballots, count]) => {
+        console.log('User\'s ballot list get', ballots)
+        commit('appendProfileBallots', ballots)
+        commit('setBallotProfileCount', count)
         if(typeof onComplete == 'function') onComplete()
       })
       .catch(err => {
@@ -296,7 +445,6 @@ export default new Vuex.Store({
         if(typeof opt.onComplete == 'function') opt.onComplete(err)
       })
     },
-
     deleteBlog({ commit, state }, onComplete: (err?) => void) {
       state.blog.delete()
       .then(msg => {
@@ -306,6 +454,45 @@ export default new Vuex.Store({
       .catch(err => {
         console.error(err)
         if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+
+    // Ballot
+    getBallot({ commit }, opt: { id: number; onComplete: (err?) => void }) {
+      Ballot.get(opt.id)
+      .then(ballot => {
+        console.log('Ballot get', ballot)
+        commit('setBallot', ballot)
+        if(typeof opt.onComplete == 'function') opt.onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof opt.onComplete == 'function') opt.onComplete(err)
+      })
+    },
+    deleteBallot({ commit, state }, onComplete: (err?) => void) {
+      state.ballot.delete()
+      .then(msg => {
+        console.log('Ballot deleted', state.ballot)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
+      })
+    },
+    vote({ commit, state }, opt: { id: number, onComplete?: (err?) => void }) {
+      state.ballot.vote({
+        id: opt.id,
+        owner: state.user.id
+      })
+      .then(() => {
+        commit('vote', opt.id)
+        if(typeof opt.onComplete == 'function') opt.onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof opt.onComplete == 'function') opt.onComplete(err)
       })
     }
   }
