@@ -5,3 +5,11 @@
 .material-design-icon > .material-design-icon__svg {
   bottom: inherit !important;
 }
+
+.v-note-wrapper .v-note-panel {
+  border: none !important;
+}
+
+.markdown-body {
+  z-index: inherit !important;
+}

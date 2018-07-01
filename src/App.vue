@@ -34,11 +34,23 @@
         <v-list-tile
           value="true"
           ripple
+          @click.stop="postBlog"
+        >
+          <v-list-tile-action>
+            <summit title="Post a new blog" class="icon"/>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Post Blog</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile
+          value="true"
+          ripple
           @click.stop="$router.replace('signup')"
           v-if="!user.loggedIn"
         >
           <v-list-tile-action>
-            <account-plus class="icon"/>
+            <account-plus title="Sign up" class="icon"/>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>Sign up</v-list-tile-title>
@@ -51,7 +63,7 @@
           v-if="user.loggedIn"
         >
           <v-list-tile-action>
-            <logout class="icon"/>
+            <logout title="Logout" class="icon"/>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>Logout</v-list-tile-title>
@@ -83,12 +95,17 @@
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-slide-x-transition mode="out-in">
+        <v-btn icon>
+          <v-icon>search</v-icon>
+        </v-btn>
+      </v-slide-x-transition>
+      <v-slide-x-transition mode="out-in">
         <v-btn icon replace to="/about">
           <v-icon>help</v-icon>
         </v-btn>
       </v-slide-x-transition>
       <v-slide-x-transition mode="out-in">
-        <v-btn icon>
+        <v-btn icon @click="refresh">
           <v-icon>refresh</v-icon>
         </v-btn>
       </v-slide-x-transition>
@@ -107,6 +124,12 @@
       {{ snackbar.text }}
       <v-btn flat color="pink" @click.native="snackbarVisible = false">Close</v-btn>
     </v-snackbar>
+    <alert
+      v-model="alert.alert"
+      :title="alert.title"
+      :text="alert.text"
+      @confirm="alert.alert = false"
+    />
     <v-footer :fixed="fixed" app class="px-2 hidden-md-and-down">
       <span>&copy; 2018</span>
     </v-footer>
@@ -130,6 +153,8 @@ import VButton from './components/Button.vue'
 import User from './Lib/sdk/User'
 import Logout from 'vue-material-design-icons/login.vue'
 import AccountPlus from 'vue-material-design-icons/account-plus.vue'
+import Summit from 'vue-material-design-icons/summit.vue'
+import Alert from './components/Alert.vue'
 
 @Component({
   components: {
@@ -137,7 +162,9 @@ import AccountPlus from 'vue-material-design-icons/account-plus.vue'
     HelloWorld,
     VButton,
     Logout,
-    AccountPlus
+    AccountPlus,
+    Summit,
+    Alert
   }
 })
 export default class App extends Vue {
@@ -154,6 +181,29 @@ export default class App extends Vue {
     }
   ];
   miniVariant: boolean = false;
+  siteName: string = 'HYU-blog'
+
+  alert = {
+    alert: false,
+    title: 'Please login',
+    text: 'You have to login first to proceed the operation'
+  }
+
+  postBlog(): void {
+    if(!this.user.loggedIn) {
+      this.alert.alert = true
+      this.alert.title = 'Please login'
+      this.alert.text = 'You have to login first to proceed the operation'
+      return
+    } else if(!this.user.isBlogger && !this.user.isAdmin) {
+      this.alert.alert = true
+      this.alert.title = 'I\'m Sorry, but...'
+      this.alert.text = `You have to be a blogger or administrator.\nPlease contact the administrator of ${this.siteName} for more information.`
+      return
+    }
+    this.$store.commit('setEdit', false)
+    this.$router.replace('/edit-blog')
+  }
 
   get snackbar() {
     return this.$store.state.snackbar
@@ -188,8 +238,32 @@ export default class App extends Vue {
   // Top toolbar
   // title: string = 'HYU-blog';
   get title(): string {
-    if(this.$route.name == 'home' || this.$route.name == 'blogs') return 'HYU-blog'
-    return this.$route.name && ((this.$route.name[0]).toUpperCase() + this.$route.name.substring(1)) || 'HYU-blog'
+    if(this.$route.name == 'home' || this.$route.name == 'blogs') return this.siteName
+    else if(this.$route.meta.title) return this.$route.meta.title
+    else return this.$route.name && ((this.$route.name[0]).toUpperCase() + this.$route.name.substring(1)) || this.siteName
+  }
+
+  onComplete(err?): void {
+    this.snackbarVisible = true
+    if(err) {
+      this.snackbar.text = 'Refresh failed : ('
+    } else {
+      this.snackbar.text = 'Refreshed : )'
+    }
+  }
+
+  refresh(): void {
+    switch(this.$route.name) {
+      case 'profile': this.$store.dispatch('setProfileUser', {
+        id: this.$store.state.profileUser.id,
+        onComplete: this.onComplete
+      }); break
+      case 'blog': this.$store.dispatch('getBlog', {
+        id: this.$store.state.blog.id,
+        onComplete: this.onComplete
+      }); break
+      case 'blogs': this.$store.dispatch('refreshHotBlogs', this.onComplete)
+    }
   }
 
   mounted(): void {

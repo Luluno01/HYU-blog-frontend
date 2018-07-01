@@ -85,42 +85,7 @@ export default new Vuex.Store({
       // chosen: 5
     },
     blog: defaultBlog,
-    // {
-    //   id: 0,
-    //   title: 'Title',
-    //   text: '# rua\n\n* fasdf\n* piuoiuo',
-    //   owner: {
-    //     avatar: generateAvatar('Admin', 256),
-    //     userId: 256,
-    //     userName: 'Admin',
-    //     extraInfo: 'Administrator of HYU-blog'
-    //   },
-    //   time: (new Date),
-    //   comments: [
-    //     {
-    //       id: 2,
-    //       owner: {
-    //         avatar: generateAvatar('Admin', 256),
-    //         userId: 256,
-    //         userName: 'Admin',
-    //         extraInfo: 'Administrator of HYU-blog'
-    //       },
-    //       text: 'echo rua\n\n* asdffasdf\n* plilkjk',
-    //       time: new Date
-    //     },
-    //     {
-    //       id: 3,
-    //       owner: {
-    //         avatar: generateAvatar('Test', 1),
-    //         userId: 1,
-    //         userName: 'Test',
-    //         extraInfo: 'test'
-    //       },
-    //       text: 'echo rua\n\n* asdffasdf\n* plilkjk',
-    //       time: new Date
-    //     }
-    //   ]
-    // }
+    edit: false
   },
   mutations: {
     snackbar(state, conf: { timeout?: number; text: string }): void {
@@ -193,6 +158,17 @@ export default new Vuex.Store({
     // Blog
     setBlog(state, blog: Blog) {
       state.blog = blog
+    },
+
+    // Edit blog
+    setEdit(state, edit: boolean) {
+      state.edit = edit
+    },
+    setTitle(state, title: string) {
+      state.blog.title = title
+    },
+    setText(state, text: string) {
+      state.blog.text = text
     }
   },
   actions: {
@@ -286,7 +262,7 @@ export default new Vuex.Store({
       .then(([blogs, count]) => {
         console.log('User\'s blog list get', blogs)
         commit('setProfileBlogs', blogs)
-        commit('setCount', count)
+        commit('setProfileCount', count)
         if(typeof onComplete == 'function') onComplete()
       })
       .catch(err => {
@@ -320,6 +296,18 @@ export default new Vuex.Store({
       .catch(err => {
         console.error(err)
         if(typeof opt.onComplete == 'function') opt.onComplete(err)
+      })
+    },
+
+    deleteBlog({ commit, state }, onComplete: (err?) => void) {
+      state.blog.delete()
+      .then(msg => {
+        console.log('Blog deleted', state.blog)
+        if(typeof onComplete == 'function') onComplete()
+      })
+      .catch(err => {
+        console.error(err)
+        if(typeof onComplete == 'function') onComplete(err)
       })
     }
   }

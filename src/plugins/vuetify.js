@@ -21,7 +21,8 @@ import {
   VDialog,
   VSnackbar,
   VForm,
-  VTextField
+  VTextField,
+  VSpeedDial
 } from 'vuetify'
 import { Scroll } from 'vuetify/es5/directives'
 import 'vuetify/src/stylus/app.styl'
@@ -50,7 +51,8 @@ let conf = {
     VDialog,
     VSnackbar,
     VForm,
-    VTextField
+    VTextField,
+    VSpeedDial
   },
   theme: {
     primary: '#00838F',

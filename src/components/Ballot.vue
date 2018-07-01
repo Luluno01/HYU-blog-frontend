@@ -15,7 +15,15 @@
       <v-layout column wrap>
         <p class="headline">{{ ballot.title }}</p>
         <v-divider></v-divider>
-        <vue-markdown>{{ ballot.text }}</vue-markdown>
+        <mavon-editor
+          :toolbars-flag="false"
+          :subfield="false"
+          default-open="preview"
+          :box-shadow="false"
+          :editable="false"
+          :value="ballot.text"
+        />
+        <!-- <vue-markdown>{{ ballot.text }}</vue-markdown> -->
         <v-radio-group v-if="!ballot.chosen" v-model="selected" @change="vote" :mandatory="false">
           <v-radio
             v-for="(option, i) in ballot.options"
@@ -75,14 +83,12 @@ import {
 } from 'vue-property-decorator'
 import Confirm from './Confirm.vue'
 import generateAvatar from '../Lib/generateAvatar'
-import VueMarkdown from 'vue-markdown'
 import '@/assets/css/public.css'
 import { Route } from 'vue-router'
 
 
 @Component({
   components: {
-    VueMarkdown,
     Confirm
   }
 })
@@ -140,3 +146,9 @@ export default class Ballot extends Vue {
   }
 }
 </script>
+
+<style scoped>
+.markdown-body {
+  min-height: inherit;
+}
+</style>

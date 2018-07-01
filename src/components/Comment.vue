@@ -16,7 +16,14 @@
       </v-container>
       <!-- Text -->
       <v-container mx-0 px-0 py-0>
-        <vue-markdown>{{ comment.text }}</vue-markdown>
+        <mavon-editor
+          :toolbars-flag="false"
+          :subfield="false"
+          default-open="preview"
+          :box-shadow="false"
+          :editable="false"
+          :value="comment.text"
+        />
       </v-container>
     </div>
   </v-slide-y-transition>
@@ -35,16 +42,16 @@ import {
 } from 'vue-property-decorator'
 import generateAvatar from '../Lib/generateAvatar'
 import Com from '../Lib/sdk/Comment'
-import VueMarkdown from 'vue-markdown'
 
-@Component({
-  components: {
-    VueMarkdown
-  }
-})
+@Component
 export default class Comment extends Vue {
   @Prop(Com)
   comment!: Com
 }
 </script>
 
+<style scoped>
+.markdown-body {
+  min-height: inherit;
+}
+</style>
