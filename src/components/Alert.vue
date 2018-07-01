@@ -1,5 +1,5 @@
 <template>
-  <v-layout row justify-center v-show="value">
+  <v-layout row justify-center v-show="value" style="position: absolute">
     <v-dialog v-model="_confirm" persistent max-width="290">
       <v-card>
         <v-card-title class="headline">{{ title }}</v-card-title>

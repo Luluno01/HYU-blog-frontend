@@ -30,7 +30,14 @@
     <p class="text-xs-center"><v-icon>check</v-icon>End.</p>
     <!-- Comment -->
     <v-divider></v-divider>
-    <strong class="subheading">{{ this.$store.state.blog.comments && this.$store.state.blog.comments.length || 'No' }} Comment{{ (this.$store.state.blog.comments && this.$store.state.blog.comments.length > 1 ? 's' : '') || '' }}</strong>
+    <strong class="subheading">Comment</strong>
+    <mavon-editor v-model="comment" class="mb-3" />
+    <v-btn class="hidden-md-and-up" block @click="submitComment" :disabled="!comment || !!comment.match(/^\s*$/)">Submit Comment</v-btn>
+    <v-layout row wrap>
+      <strong class="subheading" style="padding-top: 24px">{{ this.$store.state.blog.comments && this.$store.state.blog.comments.length || 'No' }} Comment{{ (this.$store.state.blog.comments && this.$store.state.blog.comments.length > 1 ? 's' : '') || '' }}</strong>
+      <v-spacer></v-spacer>
+      <v-btn class="mr-0 hidden-sm-and-down" @click="submitComment" :disabled="!comment || !!comment.match(/^\s*$/)">Submit Comment</v-btn>
+    </v-layout>
     <div class="mx-0 px-0 pt-0" v-if="this.$store.state.blog.comments && this.$store.state.blog.comments.length">
       <comment v-for="comment in this.$store.state.blog.comments" :key="comment.id" :comment="comment"></comment>
     </div>
@@ -38,7 +45,7 @@
       v-model="alert.alert"
       :title="alert.title"
       :text="alert.text"
-      @confirm="alert.alert = false"
+      @confirm="confirm"
     />
     <v-fade-transition>
       <v-speed-dial
@@ -110,6 +117,10 @@ import {
 import Comment from './Comment.vue'
 import Alert from './Alert.vue'
 import Confirm from './Confirm.vue'
+import Com from '../Lib/sdk/Comment'
+import User from '../Lib/sdk/User'
+import BlogModel from '../Lib/sdk/Blog'
+import getScroll from '../Lib/getScroll'
 import generateAvatar from '../Lib/generateAvatar'
 
 
@@ -128,7 +139,7 @@ export default class Blog extends Vue {
     if(this.$store.state.user.isAdmin || this.$store.state.user.id == this.blog.owner.id) return true
     else return false
   }
-  get blog() {
+  get blog(): BlogModel {
     return this.$store.state.blog
   }
   alert = {
@@ -136,9 +147,11 @@ export default class Blog extends Vue {
     title: 'Please login',
     text: 'You have to login first to proceed the operation'
   }
-  get user() {
+  get user(): User {
     return this.$store.state.user
   }
+
+  comment: string = ''
 
   mounted() {
     setTimeout(() => {
@@ -158,16 +171,50 @@ export default class Blog extends Vue {
     return this.snackbar.snackbar
   }
 
+  confirm(): void {
+    this.alert.alert = false
+    if(!this.user.loggedIn) this.$router.replace('/login')
+  }
+
+  submitComment(): void {
+    if(!this.user.loggedIn) {
+      this.alert.alert = true
+      this.alert.title = 'Please login'
+      this.alert.text = 'You have to login first to comment :P'
+      return
+    }
+    Com.create({
+      blog: this.blog.id,
+      text: this.comment,
+      owner: this.user.id
+    })
+    .then(msg => {
+      this.snackbarVisible = true
+      this.snackbar.text = 'Comment posted'
+      this.comment = ''
+      this.$store.dispatch('getBlog', {
+        id: this.blog.id,
+        onComplete: (err?) => {
+          if(!err) this.$nextTick(() => this.$vuetify.goTo(getScroll.scrollHeight))
+        }
+      })
+    })
+    .catch(err => {
+      this.snackbarVisible = true
+      this.snackbar.text = 'Comment failed : ('
+    })
+  }
+
   create(): void {
     if(!this.user.loggedIn) {
       this.alert.alert = true
       this.alert.title = 'Please login'
-      this.alert.text = 'You have to login first to proceed the operation'
+      this.alert.text = 'You have to login first to proceed the operation :P'
       return
     } else if(!this.user.isBlogger && !this.user.isAdmin) {
       this.alert.alert = true
       this.alert.title = 'I\'m Sorry, but...'
-      this.alert.text = `You have to be a blogger or administrator.\nPlease contact the administrator of ${(this.$root as any).siteName} for more information.`
+      this.alert.text = `You have to be a blogger or administrator.\nPlease contact the administrator of ${(this.$root as any).siteName} for more information :P`
       return
     }
     this.$store.commit('setEdit', false)
@@ -178,12 +225,12 @@ export default class Blog extends Vue {
     if(!this.user.loggedIn) {
       this.alert.alert = true
       this.alert.title = 'Please login'
-      this.alert.text = 'You have to login first to proceed the operation'
+      this.alert.text = 'You have to login first to proceed the operation :P'
       return
     } else if(!this.isOwnerOrAdmin) {
       this.alert.alert = true
       this.alert.title = 'I\'m Sorry, but...'
-      this.alert.text = 'You have to be the owner of this blog or administrator.\n'
+      this.alert.text = 'You have to be the owner of this blog or administrator :P'
       return
     }
     this.$store.commit('setEdit', true)
@@ -194,12 +241,12 @@ export default class Blog extends Vue {
     if(!this.user.loggedIn) {
       this.alert.alert = true
       this.alert.title = 'Please login'
-      this.alert.text = 'You have to login first to proceed the operation'
+      this.alert.text = 'You have to login first to proceed the operation :P'
       return
     } else if(!this.isOwnerOrAdmin) {
       this.alert.alert = true
       this.alert.title = 'I\'m Sorry, but...'
-      this.alert.text = 'You have to be the owner of this blog or administrator.\n'
+      this.alert.text = 'You have to be the owner of this blog or administrator :P'
       return
     }
     this.$store.dispatch('deleteBlog', (err?) => {
@@ -218,5 +265,6 @@ export default class Blog extends Vue {
 <style scoped>
 .markdown-body {
   min-height: inherit;
+  max-height: calc(100vh - 150px);
 }
 </style>

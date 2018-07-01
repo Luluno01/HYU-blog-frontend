@@ -45,12 +45,6 @@ export default new Vuex.Store({
     },
     user: defaultUser,
     profileUser: defaultUser,
-    // {
-    //   avatar: require('@/assets/logo.png'),
-    //   id: 0,
-    //   nickname: null,
-    //   isBlogger: null
-    // },
     hotBlogsPage: {
       pageNum: 1,
       pageSize: 25,
@@ -58,6 +52,7 @@ export default new Vuex.Store({
       ascend: false
     },
     hotBlogs: [] as Blog[],
+    searchWord: '',
     profilePage: {
       pageNum: 1,
       pageSize: 25,
@@ -111,6 +106,9 @@ export default new Vuex.Store({
     },
     appendHotBlogs(state, blogs: Blog[]) {
       state.hotBlogs = state.hotBlogs.concat(blogs)
+    },
+    setSearchWord(state, str: string) {
+      state.searchWord = str
     },
     vote(state, votedOption: number) {
       Object.defineProperty(state.ballot, 'chosen', {
@@ -219,7 +217,7 @@ export default new Vuex.Store({
 
     // Hot blogs
     refreshHotBlogs({ commit, state }, onComplete?: (err?) => void) {
-      Blog.getHotBlogs(state.hotBlogsPage.pageNum, state.hotBlogsPage.pageSize, state.hotBlogsPage.ascend)
+      Blog.getHotBlogs({ ...state.hotBlogsPage as any, search: state.searchWord })
       .then(([blogs, count]) => {
         commit('setHotBlogs', blogs)
         commit('setCount', count)
@@ -232,7 +230,7 @@ export default new Vuex.Store({
     },
 
     appendHotBlogs({ commit, state }, onComplete: (err?) => void) {
-      Blog.getHotBlogs(state.hotBlogsPage.pageNum, state.hotBlogsPage.pageSize, state.hotBlogsPage.ascend)
+      Blog.getHotBlogs({ ...state.hotBlogsPage as any, search: state.searchWord })
       .then(([blogs, count]) => {
         commit('appendHotBlogs', blogs)
         commit('setCount', count)
@@ -258,7 +256,7 @@ export default new Vuex.Store({
       })
     },
     refreshProfileBlogs({ commit, state }, onComplete?: (err?) => void) {
-      state.profileUser.getBlogs(state.profilePage.pageNum, state.profilePage.pageSize, state.profilePage.ascend)
+      state.profileUser.getBlogs(state.profilePage)
       .then(([blogs, count]) => {
         console.log('User\'s blog list get', blogs)
         commit('setProfileBlogs', blogs)
@@ -272,7 +270,7 @@ export default new Vuex.Store({
     },
 
     appendProfileBlogs({ commit, state }, onComplete: (err?) => void) {
-      state.profileUser.getBlogs(state.profilePage.pageNum, state.profilePage.pageSize, state.profilePage.ascend)
+      state.profileUser.getBlogs(state.profilePage)
       .then(([blogs, count]) => {
         console.log('User\'s blog list get', blogs)
         commit('appendProfileBlogs', blogs)

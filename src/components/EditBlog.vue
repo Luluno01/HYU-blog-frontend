@@ -181,4 +181,3 @@ export default class EditBlog extends Vue {
   z-index: inherit;
 }
 </style>
-

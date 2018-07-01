@@ -168,6 +168,9 @@ export default class HotBlogs extends Vue {
   mounted() {
     this.$store.commit('setProfilePageNum', 1)
     this.$store.commit('setProfilePageSize', 15)
+    this.$store.commit('setPageNum', 1)
+    this.$store.commit('setPageSize', 15)
+    this.$store.commit('setSearchWord', '')
   }
 
   @Watch('$route')
@@ -177,6 +180,7 @@ export default class HotBlogs extends Vue {
       this.$store.commit('setProfilePageSize', 15)
       this.$store.commit('setPageNum', 1)
       this.$store.commit('setPageSize', 15)
+      this.$store.commit('setSearchWord', '')
     }
   }
 

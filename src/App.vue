@@ -75,6 +75,7 @@
       app
       color="primary"
       :clipped-left="clipped"
+      @dblclick="$vuetify.goTo(0)"
     >
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
       <v-slide-x-transition mode="out-in">
@@ -94,8 +95,15 @@
       </v-slide-x-transition>
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-text-field
+        hide-details
+        single-line
+        style="max-width"
+        v-model="searchWord"
+        v-show="isBlogs"
+      ></v-text-field>
       <v-slide-x-transition mode="out-in">
-        <v-btn icon>
+        <v-btn icon v-show="isBlogs" @click="search">
           <v-icon>search</v-icon>
         </v-btn>
       </v-slide-x-transition>
@@ -189,6 +197,30 @@ export default class App extends Vue {
     text: 'You have to login first to proceed the operation'
   }
 
+  searchWord: string = ''
+  get isBlogs(): boolean {
+    return this.$route.name == 'blogs'
+  }
+
+  search(): void {
+    this.$store.commit('setSearchWord', this.searchWord)
+    this.$store.dispatch('refreshHotBlogs', (err?) => {
+      if(err) {
+        this.snackbarVisible = true
+        this.snackbar.text = 'Failed to search : ('
+      }
+    })
+  }
+
+  @Watch('$route')
+  onRouteChange(to): void {
+    if(to.name == 'blogs') this.clearSearch()
+  }
+
+  clearSearch(): void {
+    this.searchWord = ''
+  }
+
   postBlog(): void {
     if(!this.user.loggedIn) {
       this.alert.alert = true
@@ -262,7 +294,11 @@ export default class App extends Vue {
         id: this.$store.state.blog.id,
         onComplete: this.onComplete
       }); break
-      case 'blogs': this.$store.dispatch('refreshHotBlogs', this.onComplete)
+      case 'blogs': {
+        this.clearSearch()
+        this.$store.commit('setSearchWord', '')
+        this.$store.dispatch('refreshHotBlogs', this.onComplete)
+      }
     }
   }
 
